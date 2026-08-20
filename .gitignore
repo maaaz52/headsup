@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Electron download archives
+*.zip
+
+# Build output
+out/
+release/
+dist*/
+dist-v*/
+installer/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/

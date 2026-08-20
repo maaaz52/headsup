@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 512px;
+        height: 512px;
+        overflow: hidden;
+        background: transparent;
+      }
+      .icon {
+        width: 512px;
+        height: 512px;
+        border-radius: 96px;
+        overflow: hidden;
+        position: relative;
+        background: linear-gradient(160deg, #1f2937 0%, #111827 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .halo {
+        position: absolute;
+        width: 420px;
+        height: 420px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(37, 99, 235, 0.35) 0%, transparent 70%);
+      }
+      .panda {
+        position: relative;
+        width: 400px;
+        height: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="icon">
+      <div class="halo"></div>
+      <svg class="panda" viewBox="0 0 460 260" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="205" cy="140" rx="72" ry="58" fill="#f8fafc" stroke="#94a3b8" stroke-width="5" />
+        <circle cx="168" cy="66" r="26" fill="#111827" />
+        <circle cx="242" cy="66" r="26" fill="#111827" />
+        <circle cx="168" cy="66" r="13" fill="#374151" />
+        <circle cx="242" cy="66" r="13" fill="#374151" />
+        <ellipse cx="180" cy="120" rx="20" ry="22" fill="#111827" />
+        <ellipse cx="230" cy="120" rx="20" ry="22" fill="#111827" />
+        <circle cx="180" cy="112" r="24" fill="none" stroke="#1e293b" stroke-width="4" />
+        <circle cx="230" cy="112" r="24" fill="none" stroke="#1e293b" stroke-width="4" />
+        <path d="M204 112 h12" stroke="#1e293b" stroke-width="4" />
+        <path d="M156 112 l-10 -6" stroke="#1e293b" stroke-width="4" stroke-linecap="round" />
+        <path d="M254 112 l10 -6" stroke="#1e293b" stroke-width="4" stroke-linecap="round" />
+        <circle cx="180" cy="120" r="8" fill="#ffffff" />
+        <circle cx="230" cy="120" r="8" fill="#ffffff" />
+        <circle cx="180" cy="121" r="4" fill="#111827" />
+        <circle cx="230" cy="121" r="4" fill="#111827" />
+        <ellipse cx="205" cy="170" rx="12" ry="8" fill="#111827" />
+        <path d="M205 178 v8 m0 0 q-9 11 -20 5 M205 186 q9 11 20 5" stroke="#111827" stroke-width="4" fill="none" stroke-linecap="round" />
+      </svg>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
+    />
+    <title>headsup flyby</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: transparent;
+        overflow: hidden;
+        width: 100%;
+        height: 100%;
+      }
+      #stage {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: flex-start;
+      }
+      #flight {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        display: flex;
+        align-items: flex-start;
+        will-change: transform;
+      }
+      #banner {
+        margin-top: 30px;
+        height: 78px;
+        display: flex;
+        align-items: center;
+        background: #ffffff;
+        color: #111827;
+        font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+        font-weight: 700;
+        font-size: 28px;
+        letter-spacing: 0.2px;
+        padding: 0 28px;
+        white-space: nowrap;
+        border-radius: 6px;
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+        position: relative;
+        z-index: 2;
+        transition: background 0.15s, color 0.15s;
+      }
+      #banner[data-theme='midnight'] {
+        background: #0f172a;
+        color: #f8fafc;
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.55);
+      }
+      #banner[data-theme='lime'] {
+        background: #bef264;
+        color: #1a2e05;
+      }
+      #banner[data-theme='sunset'] {
+        background: #fde68a;
+        color: #431407;
+      }
+      #banner[data-theme='sky'] {
+        background: #bae6fd;
+        color: #082f49;
+      }
+      #banner::after {
+        content: '';
+        position: absolute;
+        right: -14px;
+        top: 50%;
+        transform: translateY(-50%);
+        border-left: 14px solid #ffffff;
+        border-top: 39px solid transparent;
+        border-bottom: 39px solid transparent;
+      }
+      #banner[data-theme='midnight']::after {
+        border-left-color: #0f172a;
+      }
+      #banner[data-theme='lime']::after {
+        border-left-color: #bef264;
+      }
+      #banner[data-theme='sunset']::after {
+        border-left-color: #fde68a;
+      }
+      #banner[data-theme='sky']::after {
+        border-left-color: #bae6fd;
+      }
+      #character {
+        margin-left: 0;
+        height: 140px;
+        flex-shrink: 0;
+        position: relative;
+        z-index: 2;
+      }
+      #towline {
+        flex-shrink: 0;
+        width: 120px;
+        height: 96px;
+        margin-top: 36px;
+        margin-left: 6px;
+        margin-right: 6px;
+        position: relative;
+        z-index: 1;
+      }
+      #towline svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+        overflow: visible;
+      }
+      #character svg {
+        height: 100%;
+        width: auto;
+        display: block;
+        transform: scaleX(-1);
+      }
+      .prop {
+        transform-origin: 45px 165px;
+        animation: prop-spin 0.12s linear infinite;
+      }
+      @keyframes prop-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="stage">
+      <div id="flight">
+        <div id="banner"></div>
+        <div id="towline">
+          <svg viewBox="0 0 120 96" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M8 34 Q60 70 112 40"
+              fill="none"
+              stroke="rgba(30, 40, 55, 0.9)"
+              stroke-width="3"
+              stroke-linecap="round"
+            />
+            <path
+              d="M8 40 Q60 76 112 46"
+              fill="none"
+              stroke="rgba(30, 40, 55, 0.9)"
+              stroke-width="3"
+              stroke-linecap="round"
+            />
+          </svg>
+        </div>
+        <div id="character"></div>
+      </div>
+    </div>
+    <script type="module" src="/src/overlay.ts"></script>
+  </body>
+</html>
