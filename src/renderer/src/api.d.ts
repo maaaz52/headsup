@@ -30,6 +30,7 @@ export interface ProviderConfig {
 
 export interface WindowApi {
   appName: string
+  isBrowserPreview?: boolean
   startFlyBy: (character: string, message: string) => Promise<void>
   listUpcomingEvents: () => Promise<CalendarEvent[]>
   refreshEvents: () => Promise<{ events: CalendarEvent[]; error: string | null }>
@@ -47,6 +48,11 @@ export interface WindowApi {
 }
 
 declare global {
+declare module '*.svg' {
+  const source: string
+  export default source
+}
+
   interface Window {
     api: WindowApi
   }

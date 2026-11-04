@@ -66,7 +66,7 @@ async function waitForCallback(server: Server, state: string): Promise<string> {
       res.end(
         '<html><body style="font-family:system-ui;text-align:center;padding-top:80px">' +
           '<h2>You can close this tab now</h2>' +
-          '<p>headsup has connected your calendar.</p></body></html>'
+          '<p>Headsup has connected your calendar.</p></body></html>'
       )
       server.close()
       resolve(code)

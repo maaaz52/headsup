@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
+import headsupMark from './assets/headsup-mark.svg'
 import { getCharacters } from './characters'
 import ProviderRow from './ProviderRow'
 import type { AppSettings, ProviderStatus, CalendarSource } from './api'
@@ -29,7 +30,6 @@ function formatDay(iso: string): string {
 export default function App(): React.JSX.Element {
   const [flying, setFlying] = useState(false)
   const [events, setEvents] = useState<CalendarEvent[]>([])
-  const galleryRef = useRef<HTMLDivElement | null>(null)
   const [settings, setSettings] = useState<AppSettings>({
     headsUpMinutes: 5,
     characterId: 'panda',
@@ -45,9 +45,14 @@ export default function App(): React.JSX.Element {
   const [calendarName, setCalendarName] = useState('')
   const [adding, setAdding] = useState(false)
   const [addError, setAddError] = useState('')
+  const [customMinutes, setCustomMinutes] = useState('5')
 
   const characters = getCharacters()
   const character = characters.find((c) => c.id === settings.characterId) ?? characters[0]
+  const isBrowserPreview = window.api.isBrowserPreview === true
+  const previewMessage = settings.customMessage
+    ? settings.customMessage.replaceAll('{meeting}', 'Design review').replaceAll('{minutes}', String(settings.headsUpMinutes))
+    : `Design review starts in ${settings.headsUpMinutes} minutes`
 
   const refreshEvents = async (): Promise<void> => {
     try {
@@ -58,7 +63,10 @@ export default function App(): React.JSX.Element {
   }
 
   useEffect(() => {
-    window.api.getSettings().then(setSettings).catch(() => {})
+    window.api.getSettings().then((loaded) => {
+      setSettings(loaded)
+      setCustomMinutes(String(loaded.headsUpMinutes))
+    }).catch(() => {})
     window.api.listCalendars().then(setCalendars).catch(() => {})
     refreshEvents()
     refreshProviders()
@@ -80,7 +88,7 @@ export default function App(): React.JSX.Element {
   const testFlight = async (): Promise<void> => {
     setFlying(true)
     const msg = settings.customMessage
-      ? settings.customMessage.replaceAll('{meeting}', 'Test Meeting').replaceAll('{minutes}', '5')
+      ? settings.customMessage.replaceAll('{meeting}', 'Test Meeting').replaceAll('{minutes}', String(settings.headsUpMinutes))
       : 'Test flight — here we go!'
     await window.api.startFlyBy(settings.characterId, msg)
     window.setTimeout(() => setFlying(false), 6500)
@@ -89,15 +97,22 @@ export default function App(): React.JSX.Element {
   const changeHeadsUp = async (minutes: number): Promise<void> => {
     const next = { ...settings, headsUpMinutes: minutes }
     setSettings(next)
+    setCustomMinutes(String(minutes))
     await window.api.setHeadsUpMinutes(minutes)
+  }
+
+  const customTimingValue = Number(customMinutes)
+  const customTimingValid = Number.isInteger(customTimingValue) && customTimingValue >= 1 && customTimingValue <= 240
+
+  const applyCustomTiming = async (): Promise<void> => {
+    if (!customTimingValid) return
+    await changeHeadsUp(customTimingValue)
   }
 
   const changeCharacter = async (id: string): Promise<void> => {
     const next = { ...settings, characterId: id }
     setSettings(next)
     await window.api.updateSettings({ characterId: id })
-    const tile = galleryRef.current?.querySelector(`[data-char="${id}"]`)
-    tile?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
   }
 
   const changeTheme = async (id: string): Promise<void> => {
@@ -176,184 +191,257 @@ export default function App(): React.JSX.Element {
   }, [])
 
   return (
-    <div className="app">
-      <h1>headsup</h1>
-      <p>A friendly character will fly across your screen before each meeting.</p>
+    <div className="app-shell">
+      <a className="skip-link" href="#main-content">Skip to settings</a>
 
-      <p className="hint">
-        Closing the window keeps headsup running in the tray (bottom-right) — click the panda to
-        bring it back.
-      </p>
-
-      <section className="card">
-        <h2>Your character</h2>
-        <div className="gallery-wrap">
-          <button
-            className="gallery-arrow"
-            onClick={() => galleryRef.current?.scrollBy({ left: -170, behavior: 'smooth' })}
-          >
-            ‹
-          </button>
-          <div className="gallery" ref={galleryRef}>
-            {characters.map((c, i) => (
-              <button
-                key={c.id}
-                data-char={c.id}
-                className={`char-tile ${c.id === settings.characterId ? 'char-active' : ''}`}
-                style={{ animationDelay: `${i * 40}ms` }}
-                onClick={() => changeCharacter(c.id)}
-              >
-                <div className="char-art" dangerouslySetInnerHTML={{ __html: c.svg }} />
-                <span>{c.name}</span>
-              </button>
-            ))}
+      <header className="masthead">
+        <div className="brand">
+          <img className="brand-mark" src={headsupMark} alt="" aria-hidden="true" />
+          <div>
+            <h1>Headsup</h1>
+            <p>A friendly flight across your screen before the next meeting</p>
           </div>
-          <button
-            className="gallery-arrow"
-            onClick={() => galleryRef.current?.scrollBy({ left: 170, behavior: 'smooth' })}
-          >
-            ›
-          </button>
         </div>
-        <button className="btn-primary" onClick={testFlight} disabled={flying}>
-          {flying ? 'Flying…' : 'Test Flight'}
-        </button>
-        <p className="hint">Watch the screen — {character.name} will fly by with a banner.</p>
-      </section>
-
-      <section className="card">
-        <h2>Banner theme</h2>
-        <div className="theme-grid">
-          {THEMES.map((t) => (
-            <button
-              key={t.id}
-              className={`theme-tile theme-${t.id} ${settings.bannerTheme === t.id ? 'theme-active' : ''}`}
-              onClick={() => changeTheme(t.id)}
-            >
-              {t.name}
-            </button>
-          ))}
+        <div className="app-state">
+          <span className="state-dot" aria-hidden="true" />
+          {isBrowserPreview ? 'Browser preview' : 'Running in tray'}
         </div>
-      </section>
+      </header>
 
-      <section className="card">
-        <h2>Custom message</h2>
-        <p className="hint">
-          Leave blank for the default. Use {'{meeting}'} for the meeting name and {'{minutes}'} for
-          time remaining.
-        </p>
-        <input
-          className="input"
-          type="text"
-          placeholder="e.g. {meeting} starts in {minutes} min — see you there!"
-          value={settings.customMessage}
-          onChange={(e) => changeCustomMessage(e.target.value)}
-        />
-      </section>
+      <main id="main-content" className="workspace">
+        <section className="flight-panel" aria-labelledby="flight-title">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">Flight setup</p>
+              <h2 id="flight-title">Choose how your reminder arrives</h2>
+            </div>
+            <span className="timing-readout">{settings.headsUpMinutes} min early</span>
+          </div>
 
-      <section className="card">
-        <h2>Heads-up timing</h2>
-        <div className="segmented">
-          {[5, 10, 15].map((mins) => (
-            <button
-              key={mins}
-              className={settings.headsUpMinutes === mins ? 'seg-active' : ''}
-              onClick={() => changeHeadsUp(mins)}
-            >
-              {mins} min
-            </button>
-          ))}
-        </div>
-        <label className="toggle-row">
-          <input type="checkbox" checked={settings.soundEnabled} onChange={toggleSound} />
-          <span>Play sounds during the fly-by</span>
-        </label>
-        <label className="toggle-row">
-          <input type="checkbox" checked={settings.launchAtLogin} onChange={toggleLaunchAtLogin} />
-          <span>Start headsup when I log in</span>
-        </label>
-      </section>
-
-      <section className="card">
-        <h2>Cloud calendars</h2>
-        <p className="hint">
-          Connect your Google or Microsoft calendar — your meetings will appear automatically before
-          they start.
-        </p>
-        {providers.map((p) => (
-          <ProviderRow key={p.id} status={p} onStatusChange={refreshProviders} />
-        ))}
-        {providers.length === 0 && <p className="hint">Cloud calendar support unavailable.</p>}
-      </section>
-
-      <section className="card">
-        <h2>Calendar link</h2>
-        <p className="hint">
-          Use this for calendars that don't offer a sign-in, like Apple iCloud. Share a calendar to
-          get an <code>.ics</code> link and paste it below.
-        </p>
-        <input
-          className="input"
-          type="url"
-          placeholder="https://.../calendar.ics"
-          value={calendarUrl}
-          onChange={(e) => setCalendarUrl(e.target.value)}
-        />
-        <input
-          className="input"
-          type="text"
-          placeholder="Calendar name (optional)"
-          value={calendarName}
-          onChange={(e) => setCalendarName(e.target.value)}
-        />
-        <button
-          className="btn-secondary"
-          onClick={addCalendar}
-          disabled={adding || !calendarUrl.trim()}
-        >
-          {adding ? 'Connecting…' : 'Add calendar link'}
-        </button>
-        {addError && <p className="error">{addError}</p>}
-        {calendars.length > 0 && (
-          <ul className="cal-list">
-            {calendars.map((cal) => (
-              <li key={cal.id}>
-                <span>{cal.name}</span>
-                <button className="link-btn" onClick={() => removeCalendar(cal.id)}>
-                  Remove
+          <div className="flight-layout">
+            <div className={`flight-stage stage-${settings.bannerTheme} ${flying ? 'is-flying' : ''}`}>
+              <div className="route-line" aria-hidden="true">
+                <span />
+              </div>
+              <div className="stage-character" dangerouslySetInnerHTML={{ __html: character.svg }} />
+              <div className="banner-preview">
+                <span className="banner-kicker">Heads up · {settings.headsUpMinutes} min</span>
+                <strong>{previewMessage}</strong>
+              </div>
+              <div className="stage-footer">
+                <span>{character.name} is ready</span>
+                <button className="btn-primary" onClick={testFlight} disabled={flying}>
+                  {flying ? 'In flight…' : 'Test flight'}
                 </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+              </div>
+            </div>
 
-      <section className="card">
-        <div className="card-row">
-          <h2>Upcoming</h2>
-          <button className="link-btn" onClick={manualRefresh}>
-            Refresh
-          </button>
-        </div>
-        {loadError && <p className="error">{loadError}</p>}
-        {events.length === 0 ? (
-          <p className="hint">Connect a calendar above to see your upcoming meetings.</p>
-        ) : (
-          <ul className="event-list">
-            {events.map((ev) => (
-              <li key={`${ev.calendarName}:${ev.id}:${ev.start}`}>
-                <div className="event-time">
-                  <span className="event-day">{formatDay(ev.start)}</span>
-                  <span className="event-clock">{ev.allDay ? 'All day' : formatTime(ev.start)}</span>
+            <div className="flight-controls">
+              <fieldset className="control-group">
+                <legend>Flyer</legend>
+                <div className="character-grid">
+                  {characters.map((c) => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      aria-pressed={c.id === settings.characterId}
+                      className={`character-choice ${c.id === settings.characterId ? 'is-active' : ''}`}
+                      onClick={() => changeCharacter(c.id)}
+                    >
+                      <span className="choice-art" dangerouslySetInnerHTML={{ __html: c.svg }} />
+                      <span>{c.name}</span>
+                    </button>
+                  ))}
                 </div>
-                <div className="event-title">{ev.title}</div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+              </fieldset>
 
-      <p className="status">headsup 1.0.0 — your meeting panda</p>
+              <fieldset className="control-group">
+                <legend>Banner</legend>
+                <div className="theme-grid">
+                  {THEMES.map((theme) => (
+                    <button
+                      key={theme.id}
+                      type="button"
+                      aria-pressed={settings.bannerTheme === theme.id}
+                      className={`theme-choice ${settings.bannerTheme === theme.id ? 'is-active' : ''}`}
+                      onClick={() => changeTheme(theme.id)}
+                    >
+                      <span className={`theme-swatch theme-${theme.id}`} aria-hidden="true" />
+                      {theme.name}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+
+              <div className="control-group">
+                <label className="field-label" htmlFor="custom-message">Message</label>
+                <input
+                  id="custom-message"
+                  className="input"
+                  type="text"
+                  placeholder="Write a reminder in your own words"
+                  value={settings.customMessage}
+                  onChange={(event) => changeCustomMessage(event.target.value)}
+                />
+                <p className="field-help">Optional · Leave blank to show the meeting title and reminder time</p>
+              </div>
+
+              <fieldset className="control-group timing-group">
+                <legend>Timing</legend>
+                <div className="segmented">
+                  {[5, 10, 15, 30, 60].map((minutes) => (
+                    <button
+                      key={minutes}
+                      type="button"
+                      aria-pressed={settings.headsUpMinutes === minutes}
+                      className={settings.headsUpMinutes === minutes ? 'is-active' : ''}
+                      onClick={() => changeHeadsUp(minutes)}
+                    >
+                      {minutes} min
+                    </button>
+                  ))}
+                </div>
+                <div className="custom-timing">
+                  <label htmlFor="custom-timing">Custom</label>
+                  <div className={`number-field ${customMinutes && !customTimingValid ? 'is-invalid' : ''}`}>
+                    <input
+                      id="custom-timing"
+                      type="number"
+                      min="1"
+                      max="240"
+                      step="1"
+                      inputMode="numeric"
+                      value={customMinutes}
+                      onChange={(event) => setCustomMinutes(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter') void applyCustomTiming()
+                      }}
+                      aria-describedby="timing-help"
+                    />
+                    <span>minutes</span>
+                  </div>
+                  <button className="btn-secondary compact" onClick={applyCustomTiming} disabled={!customTimingValid || customTimingValue === settings.headsUpMinutes}>
+                    Set
+                  </button>
+                </div>
+                <p id="timing-help" className="field-help">Choose any whole number from 1 to 240 minutes</p>
+              </fieldset>
+
+              <div className="switch-list">
+                <label className="switch-row">
+                  <span>
+                    <strong>Flight sound</strong>
+                    <small>Play a cue with each reminder</small>
+                  </span>
+                  <input type="checkbox" checked={settings.soundEnabled} onChange={toggleSound} />
+                </label>
+                <label className="switch-row">
+                  <span>
+                    <strong>Launch at login</strong>
+                    <small>Keep Headsup ready in the tray</small>
+                  </span>
+                  <input type="checkbox" checked={settings.launchAtLogin} onChange={toggleLaunchAtLogin} />
+                </label>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div className="calendar-layout">
+          <section className="calendar-panel" aria-labelledby="sources-title">
+            <div className="section-heading compact">
+              <div>
+                <p className="eyebrow">Sources</p>
+                <h2 id="sources-title">Bring in your meetings</h2>
+              </div>
+            </div>
+            {isBrowserPreview && (
+              <p className="preview-note">Open the desktop app to connect calendars. This preview keeps your design settings locally.</p>
+            )}
+            <div className="provider-list">
+              {providers.map((provider) => (
+                <ProviderRow key={provider.id} status={provider} onStatusChange={refreshProviders} />
+              ))}
+              {providers.length === 0 && <p className="empty-copy">Cloud calendar support is unavailable</p>}
+            </div>
+
+            <div className="divider"><span>or add a calendar link</span></div>
+            <div className="calendar-form">
+              <label className="field-label" htmlFor="calendar-url">Shared calendar URL</label>
+              <div className="input-row">
+                <input
+                  id="calendar-url"
+                  className="input"
+                  type="url"
+                  placeholder="https://…/calendar.ics"
+                  value={calendarUrl}
+                  onChange={(event) => setCalendarUrl(event.target.value)}
+                />
+                <input
+                  className="input calendar-name"
+                  type="text"
+                  aria-label="Calendar name"
+                  placeholder="Name"
+                  value={calendarName}
+                  onChange={(event) => setCalendarName(event.target.value)}
+                />
+                <button className="btn-secondary" onClick={addCalendar} disabled={adding || !calendarUrl.trim()}>
+                  {adding ? 'Adding…' : 'Add'}
+                </button>
+              </div>
+              {addError && <p className="error">{addError}</p>}
+            </div>
+            {calendars.length > 0 && (
+              <ul className="calendar-list">
+                {calendars.map((calendar) => (
+                  <li key={calendar.id}>
+                    <span>{calendar.name}</span>
+                    <button className="text-button danger" onClick={() => removeCalendar(calendar.id)}>Remove</button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          <section className="agenda-panel" aria-labelledby="agenda-title">
+            <div className="section-heading compact">
+              <div>
+                <p className="eyebrow">Next up</p>
+                <h2 id="agenda-title">Upcoming meetings</h2>
+              </div>
+              <button className="text-button" onClick={manualRefresh}>Refresh</button>
+            </div>
+            {loadError && <p className="error">{loadError}</p>}
+            {events.length === 0 ? (
+              <div className="empty-agenda">
+                <div className="empty-route" aria-hidden="true"><span /></div>
+                <strong>Your flight path is clear</strong>
+                <p>Connect a calendar and upcoming meetings will land here</p>
+              </div>
+            ) : (
+              <ul className="event-list">
+                {events.map((event) => (
+                  <li key={`${event.calendarName}:${event.id}:${event.start}`}>
+                    <div className="event-date">
+                      <strong>{formatDay(event.start)}</strong>
+                      <span>{event.allDay ? 'All day' : formatTime(event.start)}</span>
+                    </div>
+                    <div>
+                      <span className="event-title">{event.title}</span>
+                      <small>{event.calendarName}</small>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        </div>
+      </main>
+
+      <footer className="footer">
+        <span>Headsup 1.0.0</span>
+        <span>Closing this window keeps reminders running in the tray</span>
+      </footer>
     </div>
   )
 }

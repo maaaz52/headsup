@@ -1,7 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron'
 
 const api = {
-  appName: 'headsup',
+  appName: 'Headsup',
   startFlyBy: (character: string, message: string): Promise<void> =>
     ipcRenderer.invoke('flyby:start', { character, message }),
 

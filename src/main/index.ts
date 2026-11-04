@@ -36,11 +36,13 @@ app.on('second-instance', () => {
 
 function createMainWindow(): BrowserWindow {
   mainWindow = new BrowserWindow({
-    width: 460,
-    height: 820,
+    width: 1120,
+    height: 780,
+    minWidth: 760,
+    minHeight: 620,
     show: false,
     autoHideMenuBar: true,
-    title: 'headsup',
+    title: 'Headsup',
     icon: join(__dirname, '../../build/icon.png'),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
@@ -60,7 +62,7 @@ function createMainWindow(): BrowserWindow {
       if (!trayHintShown) {
         trayHintShown = true
         tray?.displayBalloon({
-          title: 'headsup still running',
+          title: 'Headsup is still running',
           content: 'I flew into the tray (bottom-right). Click the panda to bring me back.'
         })
       }

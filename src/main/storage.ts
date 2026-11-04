@@ -54,6 +54,11 @@ const DEFAULTS: StoredState = {
 
 let cache: StoredState | null = null
 
+function normalizeHeadsUpMinutes(value: unknown, fallback = 5): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return fallback
+  return Math.min(240, Math.max(1, Math.round(value)))
+}
+
 function filePath(): string {
   return join(app.getPath('userData'), 'headsup-settings.json')
 }
@@ -63,7 +68,9 @@ export function loadState(): StoredState {
   try {
     const raw = readFileSync(filePath(), 'utf-8')
     const parsed = JSON.parse(raw) as StoredState
-    cache = { ...DEFAULTS, ...parsed, settings: { ...DEFAULTS.settings, ...parsed.settings } }
+    const settings = { ...DEFAULTS.settings, ...parsed.settings }
+    settings.headsUpMinutes = normalizeHeadsUpMinutes(settings.headsUpMinutes)
+    cache = { ...DEFAULTS, ...parsed, settings }
   } catch {
     cache = structuredClone(DEFAULTS)
   }
@@ -81,13 +88,15 @@ export function getSettings(): AppSettings {
 
 export function setHeadsUpMinutes(minutes: number): void {
   const state = loadState()
-  state.settings.headsUpMinutes = minutes
+  state.settings.headsUpMinutes = normalizeHeadsUpMinutes(minutes, state.settings.headsUpMinutes)
   saveState()
 }
 
 export function updateSettings(patch: Partial<AppSettings>): AppSettings {
   const state = loadState()
-  state.settings = { ...state.settings, ...patch }
+  const next = { ...state.settings, ...patch }
+  next.headsUpMinutes = normalizeHeadsUpMinutes(next.headsUpMinutes, state.settings.headsUpMinutes)
+  state.settings = next
   saveState()
   return state.settings
 }

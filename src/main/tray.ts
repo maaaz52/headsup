@@ -19,11 +19,11 @@ function trayImage(): NativeImage {
 
 export function createTray(getMainWindow: () => BrowserWindow | null, onTestFlight: () => void): Tray {
   tray = new Tray(trayImage())
-  tray.setToolTip('headsup — meeting heads-up')
+  tray.setToolTip('Headsup — meeting reminders')
   tray.setContextMenu(
     Menu.buildFromTemplate([
       {
-        label: 'Show headsup',
+        label: 'Show Headsup',
         click: () => {
           const win = getMainWindow()
           if (win) {

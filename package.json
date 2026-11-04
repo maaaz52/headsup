@@ -1,7 +1,7 @@
 {
   "name": "headsup",
   "version": "1.0.0",
-  "description": "headsup - a friendly character flies across your screen before each meeting",
+  "description": "Headsup - a friendly character flies across your screen before each meeting",
   "main": "out/main/index.js",
   "author": "maaz",
   "license": "MIT",
@@ -14,7 +14,7 @@
   },
   "build": {
     "appId": "com.headsup.app",
-    "productName": "headsup",
+    "productName": "Headsup",
     "directories": {
       "output": "release"
     },
@@ -42,7 +42,7 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "headsup"
+      "shortcutName": "Headsup"
     }
   },
   "dependencies": {

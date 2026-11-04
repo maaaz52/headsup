@@ -55,32 +55,29 @@ export default function ProviderRow({ status, onStatusChange }: ProviderRowProps
   return (
     <div className={`provider-row ${status.connected ? 'is-connected' : ''}`}>
       <div className="provider-head">
-        <span className="provider-name">{status.name}</span>
-        {status.connected ? (
-          <span className="pill ok">{email ? `Connected · ${email}` : 'Connected'}</span>
-        ) : (
-          <span className="pill">Not connected</span>
-        )}
-      </div>
-
-      {!status.connected ? (
-        <button className="btn-primary" onClick={connect} disabled={busy || !config.clientId}>
-          {busy ? 'Signing in…' : 'Connect'}
-        </button>
-      ) : (
+        <div className="provider-identity">
+          <span className="provider-icon" aria-hidden="true">{status.id === 'google' ? 'G' : 'M'}</span>
+          <span>
+            <strong className="provider-name">{status.name}</strong>
+            <small>{status.connected ? (email || 'Connected') : 'Not connected'}</small>
+          </span>
+        </div>
         <div className="provider-actions">
-          <button className="link-btn" onClick={disconnect}>
-            Disconnect
+          {!status.connected ? (
+            <button className="btn-secondary compact" onClick={connect} disabled={busy || !config.clientId}>
+              {busy ? 'Signing in…' : 'Connect'}
+            </button>
+          ) : (
+            <button className="text-button danger" onClick={disconnect}>Disconnect</button>
+          )}
+          <button className="text-button" onClick={() => setShowAdvanced(!showAdvanced)}>
+            {showAdvanced ? 'Done' : 'Set up'}
           </button>
         </div>
-      )}
-
-      <button className="link-btn" onClick={() => setShowAdvanced(!showAdvanced)}>
-        {showAdvanced ? 'Hide advanced settings' : 'Advanced settings'}
-      </button>
+      </div>
 
       {showAdvanced && (
-        <>
+        <div className="provider-config">
           <input
             className="input"
             type="text"
@@ -106,7 +103,7 @@ export default function ProviderRow({ status, onStatusChange }: ProviderRowProps
               {saved ? 'Saved' : 'Save credentials'}
             </button>
           )}
-        </>
+        </div>
       )}
 
       {error && <p className="error">{error}</p>}
