@@ -33,7 +33,15 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run typecheck
-      - run: ${{ matrix.command }}
+      - name: Build native packages
+        shell: bash
+        run: |
+          for variable in CSC_LINK CSC_KEY_PASSWORD APPLE_ID APPLE_APP_SPECIFIC_PASSWORD APPLE_TEAM_ID; do
+            if [ -z "${!variable}" ]; then
+              unset "$variable"
+            fi
+          done
+          ${{ matrix.command }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CSC_LINK: ${{ matrix.artifact == 'windows' && secrets.WINDOWS_CSC_LINK || matrix.artifact == 'macos' && secrets.MACOS_CSC_LINK || '' }}
