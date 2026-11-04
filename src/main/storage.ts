@@ -1,19 +1,12 @@
 import { app } from 'electron'
 import { join } from 'path'
-import { existsSync, readFileSync, writeFileSync } from 'fs'
-
-export type ProviderId = 'google' | 'outlook'
+import { readFileSync, writeFileSync } from 'fs'
 
 export interface CalendarSource {
   id: string
   url: string
   name: string
   addedAt: number
-}
-
-export interface ProviderConfig {
-  clientId: string
-  clientSecret: string
 }
 
 export interface AppSettings {
@@ -28,8 +21,6 @@ export interface AppSettings {
 export interface StoredState {
   calendars: CalendarSource[]
   settings: AppSettings
-  providerConfig: Record<ProviderId, ProviderConfig>
-  providerTokens: Partial<Record<ProviderId, string>>
 }
 
 const DEFAULTS: StoredState = {
@@ -41,15 +32,7 @@ const DEFAULTS: StoredState = {
     soundEnabled: true,
     customMessage: '',
     launchAtLogin: false
-  },
-  providerConfig: {
-    google: {
-      clientId: '396778429490-j826s6u76hnbvl955ovret9k5ej8it11.apps.googleusercontent.com',
-      clientSecret: ''
-    },
-    outlook: { clientId: '', clientSecret: '' }
-  },
-  providerTokens: {}
+  }
 }
 
 let cache: StoredState | null = null
@@ -70,7 +53,12 @@ export function loadState(): StoredState {
     const parsed = JSON.parse(raw) as StoredState
     const settings = { ...DEFAULTS.settings, ...parsed.settings }
     settings.headsUpMinutes = normalizeHeadsUpMinutes(settings.headsUpMinutes)
-    cache = { ...DEFAULTS, ...parsed, settings }
+    cache = {
+      calendars: Array.isArray(parsed.calendars) ? parsed.calendars : [],
+      settings
+    }
+    // Rewrite older state once so removed OAuth credentials and token blobs are discarded.
+    saveState()
   } catch {
     cache = structuredClone(DEFAULTS)
   }
@@ -99,32 +87,6 @@ export function updateSettings(patch: Partial<AppSettings>): AppSettings {
   state.settings = next
   saveState()
   return state.settings
-}
-
-export function getProviderConfig(id: ProviderId): ProviderConfig {
-  return loadState().providerConfig[id]
-}
-
-export function setProviderConfig(id: ProviderId, config: ProviderConfig): void {
-  const state = loadState()
-  state.providerConfig[id] = config
-  saveState()
-}
-
-export function getProviderTokenBlob(id: ProviderId): string | undefined {
-  return loadState().providerTokens[id]
-}
-
-export function setProviderTokenBlob(id: ProviderId, blob: string): void {
-  const state = loadState()
-  state.providerTokens[id] = blob
-  saveState()
-}
-
-export function clearProviderTokenBlob(id: ProviderId): void {
-  const state = loadState()
-  delete state.providerTokens[id]
-  saveState()
 }
 
 export function getCalendars(): CalendarSource[] {

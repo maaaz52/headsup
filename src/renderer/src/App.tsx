@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import headsupMark from './assets/headsup-mark.svg'
 import { getCharacters } from './characters'
-import ProviderRow from './ProviderRow'
-import type { AppSettings, ProviderStatus, CalendarSource } from './api'
+import type { AppSettings, CalendarSource } from './api'
 import type { CalendarEvent } from '../../main/calendars/ics'
 
 const THEMES = [
@@ -39,7 +38,6 @@ export default function App(): React.JSX.Element {
     launchAtLogin: false
   })
   const [loadError, setLoadError] = useState<string | null>(null)
-  const [providers, setProviders] = useState<ProviderStatus[]>([])
   const [calendars, setCalendars] = useState<CalendarSource[]>([])
   const [calendarUrl, setCalendarUrl] = useState('')
   const [calendarName, setCalendarName] = useState('')
@@ -69,21 +67,8 @@ export default function App(): React.JSX.Element {
     }).catch(() => {})
     window.api.listCalendars().then(setCalendars).catch(() => {})
     refreshEvents()
-    refreshProviders()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  const refreshProviders = async (): Promise<void> => {
-    try {
-      const list = await window.api.providerStatus()
-      setProviders(list)
-      const result = await window.api.refreshEvents()
-      setEvents(result.events)
-      setLoadError(result.error)
-    } catch {
-      // provider support unavailable
-    }
-  }
 
   const testFlight = async (): Promise<void> => {
     setFlying(true)
@@ -335,13 +320,15 @@ export default function App(): React.JSX.Element {
                   </span>
                   <input type="checkbox" checked={settings.soundEnabled} onChange={toggleSound} />
                 </label>
-                <label className="switch-row">
-                  <span>
-                    <strong>Launch at login</strong>
-                    <small>Keep Headsup ready in the tray</small>
-                  </span>
-                  <input type="checkbox" checked={settings.launchAtLogin} onChange={toggleLaunchAtLogin} />
-                </label>
+                {window.api.platform !== 'linux' && (
+                  <label className="switch-row">
+                    <span>
+                      <strong>Launch at login</strong>
+                      <small>Keep Headsup ready in the tray</small>
+                    </span>
+                    <input type="checkbox" checked={settings.launchAtLogin} onChange={toggleLaunchAtLogin} />
+                  </label>
+                )}
               </div>
             </div>
           </div>
@@ -358,22 +345,33 @@ export default function App(): React.JSX.Element {
             {isBrowserPreview && (
               <p className="preview-note">Open the desktop app to connect calendars. This preview keeps your design settings locally.</p>
             )}
-            <div className="provider-list">
-              {providers.map((provider) => (
-                <ProviderRow key={provider.id} status={provider} onStatusChange={refreshProviders} />
-              ))}
-              {providers.length === 0 && <p className="empty-copy">Cloud calendar support is unavailable</p>}
+            <div className="calendar-connect-intro">
+              <div className="calendar-source-badges" aria-label="Supported calendar services">
+                <span>Google Calendar</span>
+                <span>Outlook</span>
+                <span>iCloud</span>
+                <span>Any ICS calendar</span>
+              </div>
+              <p>No account connection required. Copy the private iCal or ICS subscription link from your calendar settings and paste it below.</p>
             </div>
 
-            <div className="divider"><span>or add a calendar link</span></div>
+            <details className="calendar-help">
+              <summary>Where do I find this link?</summary>
+              <ul>
+                <li><strong>Google:</strong> Calendar settings → Integrate calendar → Secret address in iCal format</li>
+                <li><strong>Outlook:</strong> Settings → Calendar → Shared calendars → Publish a calendar</li>
+                <li><strong>iCloud:</strong> Share Calendar → Public Calendar → Copy link</li>
+              </ul>
+            </details>
+
             <div className="calendar-form">
-              <label className="field-label" htmlFor="calendar-url">Shared calendar URL</label>
+              <label className="field-label" htmlFor="calendar-url">Calendar subscription link</label>
               <div className="input-row">
                 <input
                   id="calendar-url"
                   className="input"
                   type="url"
-                  placeholder="https://…/calendar.ics"
+                  placeholder="https://…/calendar.ics or webcal://…"
                   value={calendarUrl}
                   onChange={(event) => setCalendarUrl(event.target.value)}
                 />
@@ -386,16 +384,23 @@ export default function App(): React.JSX.Element {
                   onChange={(event) => setCalendarName(event.target.value)}
                 />
                 <button className="btn-secondary" onClick={addCalendar} disabled={adding || !calendarUrl.trim()}>
-                  {adding ? 'Adding…' : 'Add'}
+                  {adding ? 'Connecting…' : 'Connect calendar'}
                 </button>
               </div>
+              <p className="field-help calendar-privacy-note">Your link stays on this device. Keep it private—anyone with the link may be able to read your calendar.</p>
               {addError && <p className="error">{addError}</p>}
             </div>
             {calendars.length > 0 && (
               <ul className="calendar-list">
                 {calendars.map((calendar) => (
                   <li key={calendar.id}>
-                    <span>{calendar.name}</span>
+                    <span className="calendar-list-name">
+                      <span className="calendar-status-dot" aria-hidden="true" />
+                      <span>
+                        <strong>{calendar.name}</strong>
+                        <small>Connected by subscription link</small>
+                      </span>
+                    </span>
                     <button className="text-button danger" onClick={() => removeCalendar(calendar.id)}>Remove</button>
                   </li>
                 ))}

@@ -27,6 +27,11 @@ function saveSettings(settings: AppSettings): AppSettings {
 export function createBrowserApi(): WindowApi {
   return {
     appName: 'Headsup',
+    platform: navigator.userAgent.includes('Mac')
+      ? 'darwin'
+      : navigator.userAgent.includes('Linux')
+        ? 'linux'
+        : 'win32',
     isBrowserPreview: true,
     startFlyBy: async () => {},
     listUpcomingEvents: async () => [],
@@ -36,16 +41,6 @@ export function createBrowserApi(): WindowApi {
       saveSettings({ ...readSettings(), headsUpMinutes: minutes })
     },
     updateSettings: async (patch) => saveSettings({ ...readSettings(), ...patch }),
-    providerStatus: async () => [
-      { id: 'google', name: 'Google Calendar', connected: false, hasClientId: false },
-      { id: 'outlook', name: 'Outlook (Microsoft)', connected: false, hasClientId: false }
-    ],
-    getProviderConfig: async () => ({ clientId: '', hasSecret: false }),
-    setProviderConfig: async () => {},
-    connectProvider: async () => {
-      throw new Error('Calendar connections are available in the desktop app.')
-    },
-    disconnectProvider: async () => {},
     addCalendar: async () => {
       throw new Error('Calendar links are available in the desktop app.')
     },

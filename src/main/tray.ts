@@ -14,7 +14,10 @@ export function setQuitting(value: boolean): void {
 
 function trayImage(): NativeImage {
   const img = nativeImage.createFromPath(join(__dirname, '../../build/icon.png'))
-  return img.resize({ width: 16, height: 16 })
+  const size = process.platform === 'linux' ? 22 : 16
+  const resized = img.resize({ width: size, height: size })
+  if (process.platform === 'darwin') resized.setTemplateImage(true)
+  return resized
 }
 
 export function createTray(getMainWindow: () => BrowserWindow | null, onTestFlight: () => void): Tray {

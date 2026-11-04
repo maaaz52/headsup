@@ -588,36 +588,53 @@ code {
   font-size: 12px;
 }
 
-.provider-list { display: flex; flex-direction: column; border-top: 1px solid var(--hairline); }
-.provider-row { padding: 12px 0; border-bottom: 1px solid var(--hairline); }
-.provider-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-.provider-identity { min-width: 0; display: flex; align-items: center; gap: 12px; }
-
-.provider-icon {
-  width: 32px;
-  height: 32px;
-  flex: 0 0 32px;
-  display: grid;
-  place-items: center;
-  border: 1px solid var(--hairline-strong);
-  border-radius: 8px;
+.calendar-connect-intro {
+  margin-bottom: 20px;
+  padding: 16px;
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
   background: var(--surface-raised);
+}
+
+.calendar-connect-intro p {
+  max-width: 60ch;
+  margin-top: 12px;
   color: var(--text-secondary);
   font-size: 12px;
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+
+.calendar-source-badges { display: flex; flex-wrap: wrap; gap: 6px; }
+.calendar-source-badges span {
+  padding: 5px 8px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-size: 10px;
   font-weight: 500;
 }
 
-.provider-identity > span:last-child { min-width: 0; display: flex; flex-direction: column; }
-.provider-name { overflow: hidden; color: var(--text); font-size: 13px; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
-.provider-identity small { margin-top: 1px; color: var(--text-muted); font-size: 11px; }
-.provider-actions { display: flex; align-items: center; gap: 8px; }
-.provider-config { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; margin-top: 12px; }
+.calendar-help {
+  margin: -6px 0 20px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
 
-.divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; color: var(--text-muted); font-size: 11px; }
-.divider::before, .divider::after { content: ""; height: 1px; flex: 1; background: var(--hairline); }
+.calendar-help summary {
+  width: fit-content;
+  color: var(--accent);
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.calendar-help summary:hover { color: var(--focus); }
+.calendar-help ul { display: grid; gap: 6px; margin: 12px 0 0 18px; color: var(--text-muted); }
+.calendar-help strong { color: var(--text-secondary); font-weight: 500; }
 
 .calendar-form .field-label { margin-bottom: 8px; }
 .input-row { display: grid; grid-template-columns: minmax(0, 1fr) 120px auto; gap: 8px; }
+.calendar-privacy-note { max-width: 68ch; margin-top: 8px; }
 .calendar-list, .event-list { list-style: none; }
 .calendar-list { margin-top: 16px; border-top: 1px solid var(--hairline); }
 
@@ -630,6 +647,12 @@ code {
   border-bottom: 1px solid var(--hairline);
   color: var(--text-secondary);
 }
+
+.calendar-list-name { min-width: 0; display: flex; align-items: center; gap: 10px; }
+.calendar-list-name > span:last-child { min-width: 0; display: flex; flex-direction: column; }
+.calendar-list-name strong { overflow: hidden; color: var(--text); font-size: 12px; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
+.calendar-list-name small { margin-top: 1px; color: var(--text-muted); font-size: 10px; }
+.calendar-status-dot { width: 7px; height: 7px; flex: 0 0 7px; border-radius: 50%; background: var(--positive); }
 
 .text-button { border: 0; background: none; color: var(--text-secondary); font-size: 12px; font-weight: 500; }
 .text-button:hover { color: var(--text); }
@@ -709,10 +732,7 @@ code {
   .stage-character { top: 68px; }
   .section-heading { margin-bottom: 20px; }
   .character-grid { grid-template-columns: repeat(4, minmax(64px, 1fr)); overflow-x: auto; padding-bottom: 4px; }
-  .provider-head, .input-row { align-items: stretch; }
-  .provider-head { flex-direction: column; }
-  .provider-actions { justify-content: flex-end; }
-  .provider-config, .input-row { grid-template-columns: 1fr; }
+  .input-row { grid-template-columns: 1fr; align-items: stretch; }
   .calendar-name { width: 100%; }
   .footer { align-items: flex-start; flex-direction: column; padding: 4px 20px 24px; }
 }

@@ -12,14 +12,11 @@ import {
 } from './storage'
 import { startScheduler, stopScheduler, getUpcomingEvents, refreshCalendarEvents, getLastRefreshError } from './scheduler'
 import { fetchUpcomingEvents } from './calendars/ics'
-import { PROVIDERS } from './auth/providers'
-import { getProviderConfig, setProviderConfig, type ProviderId } from './storage'
 import { createTray, destroyTray, isQuitting, setQuitting } from './tray'
 
 let mainWindow: BrowserWindow | null = null
 let tray: Electron.Tray | null = null
 let trayHintShown = false
-const connectingProviders = new Set<ProviderId>()
 
 // Only one instance may run at a time — a second launch just restores the existing window.
 const gotSingleInstanceLock = app.requestSingleInstanceLock()
@@ -61,10 +58,12 @@ function createMainWindow(): BrowserWindow {
       mainWindow?.hide()
       if (!trayHintShown) {
         trayHintShown = true
-        tray?.displayBalloon({
-          title: 'Headsup is still running',
-          content: 'I flew into the tray (bottom-right). Click the panda to bring me back.'
-        })
+        if (process.platform === 'win32') {
+          tray?.displayBalloon({
+            title: 'Headsup is still running',
+            content: 'I flew into the tray (bottom-right). Click the Headsup icon to bring me back.'
+          })
+        }
       }
     }
   })
@@ -128,62 +127,26 @@ function registerIpcHandlers(): void {
       if (allowed.has(key)) clean[key] = patch[key]
     }
     const updated = updateSettings(clean as never)
-    if (typeof patch.launchAtLogin === 'boolean') {
+    if (typeof patch.launchAtLogin === 'boolean' && process.platform !== 'linux') {
       app.setLoginItemSettings({ openAtLogin: patch.launchAtLogin })
     }
     return updated
   })
 
-  ipcMain.handle('provider:status', () => {
-    return Object.entries(PROVIDERS).map(([id, p]) => ({
-      id,
-      name: p.name,
-      connected: p.isConnected(),
-      hasClientId: !!getProviderConfig(id as ProviderId).clientId
-    }))
-  })
-
-  ipcMain.handle('provider:getConfig', (_event, id: ProviderId) => {
-    const config = getProviderConfig(id)
-    // Never return the raw secret to the renderer — only whether one is set.
-    return { clientId: config.clientId, hasSecret: !!config.clientSecret }
-  })
-
-  ipcMain.handle(
-    'provider:setConfig',
-    (_event, id: ProviderId, config: { clientId?: string; clientSecret?: string }) => {
-      if (!PROVIDERS[id]) throw new Error('Unknown provider.')
-      const clientId = typeof config?.clientId === 'string' ? config.clientId.slice(0, 512) : ''
-      let clientSecret = typeof config?.clientSecret === 'string' ? config.clientSecret.slice(0, 1024) : ''
-      // If the renderer didn't supply a secret (or sent a blank one), preserve the stored one.
-      if (!clientSecret) {
-        clientSecret = getProviderConfig(id).clientSecret
-      }
-      setProviderConfig(id, { clientId, clientSecret })
-    }
-  )
-
-  ipcMain.handle('provider:connect', async (_event, id: ProviderId) => {
-    const provider = PROVIDERS[id]
-    if (!provider) throw new Error('Unknown provider.')
-    if (connectingProviders.has(id)) throw new Error('Connection already in progress.')
-    connectingProviders.add(id)
-    try {
-      return await provider.connect()
-    } finally {
-      connectingProviders.delete(id)
-    }
-  })
-
-  ipcMain.handle('provider:disconnect', (_event, id: ProviderId) => {
-    const provider = PROVIDERS[id]
-    if (provider) provider.disconnect()
-  })
-
   ipcMain.handle('calendar:add', async (_event, url: string, name: string) => {
     const trimmed = (url ?? '').trim()
     if (!trimmed) throw new Error('Enter a calendar link.')
-    const safeUrl = trimmed.slice(0, 2048)
+    const normalized = trimmed.replace(/^webcal:\/\//i, 'https://')
+    let parsed: URL
+    try {
+      parsed = new URL(normalized)
+    } catch {
+      throw new Error('Enter a valid HTTPS calendar subscription link.')
+    }
+    if (parsed.protocol !== 'https:') {
+      throw new Error('Use an HTTPS calendar subscription link.')
+    }
+    const safeUrl = parsed.toString().slice(0, 2048)
     const events = await fetchUpcomingEvents(safeUrl, name?.trim() || 'My calendar', 30)
     addCalendar({ id: randomUUID(), url: safeUrl, name: name?.trim() || 'My calendar', addedAt: Date.now() })
     return { ok: true, events: events.length }
@@ -202,7 +165,9 @@ app.whenReady().then(() => {
   if (!gotSingleInstanceLock) return
   registerIpcHandlers()
   const settings = getSettings()
-  app.setLoginItemSettings({ openAtLogin: settings.launchAtLogin })
+  if (process.platform !== 'linux') {
+    app.setLoginItemSettings({ openAtLogin: settings.launchAtLogin })
+  }
   createMainWindow()
   tray = createTray(
     () => mainWindow,

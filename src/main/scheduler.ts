@@ -1,7 +1,6 @@
 import { getCalendars, getSettings } from './storage'
 import { fetchUpcomingEvents, type CalendarEvent } from './calendars/ics'
 import { showFlyBy } from './overlay'
-import { PROVIDERS } from './auth/providers'
 
 const POLL_INTERVAL_MS = 15 * 1000
 const LOOKAHEAD_DAYS = 1
@@ -61,17 +60,6 @@ async function refreshEvents(): Promise<void> {
     } catch (err) {
       lastError = `${cal.name}: ${err instanceof Error ? err.message : 'fetch failed'}`
       console.error(`[headsup] failed to fetch calendar ${cal.url}:`, err)
-    }
-  }
-
-  for (const provider of Object.values(PROVIDERS)) {
-    if (!provider.isConnected()) continue
-    try {
-      const events = await provider.fetchEvents(LOOKAHEAD_DAYS)
-      all.push(...events)
-    } catch (err) {
-      lastError = `${provider.name}: ${err instanceof Error ? err.message : 'fetch failed'}`
-      console.error(`[headsup] failed to fetch ${provider.name}:`, err)
     }
   }
 

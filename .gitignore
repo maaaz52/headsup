@@ -10,6 +10,8 @@ release/
 dist*/
 dist-v*/
 installer/
+website/dist/
+.sites-publish/
 
 # Logs
 *.log

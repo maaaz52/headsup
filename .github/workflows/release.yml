@@ -1,0 +1,67 @@
+name: Build desktop releases
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            command: npm run dist:win
+            artifact: windows
+          - os: macos-latest
+            command: npm run dist:mac
+            artifact: macos
+          - os: ubuntu-latest
+            command: npm run dist:linux
+            artifact: linux
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: ${{ matrix.command }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_LINK: ${{ matrix.artifact == 'windows' && secrets.WINDOWS_CSC_LINK || matrix.artifact == 'macos' && secrets.MACOS_CSC_LINK || '' }}
+          CSC_KEY_PASSWORD: ${{ matrix.artifact == 'windows' && secrets.WINDOWS_CSC_KEY_PASSWORD || matrix.artifact == 'macos' && secrets.MACOS_CSC_KEY_PASSWORD || '' }}
+          APPLE_ID: ${{ matrix.artifact == 'macos' && secrets.APPLE_ID || '' }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ matrix.artifact == 'macos' && secrets.APPLE_APP_SPECIFIC_PASSWORD || '' }}
+          APPLE_TEAM_ID: ${{ matrix.artifact == 'macos' && secrets.APPLE_TEAM_ID || '' }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: headsup-${{ matrix.artifact }}
+          path: |
+            release/*.exe
+            release/*.dmg
+            release/*.zip
+            release/*.AppImage
+            release/*.deb
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*
+          generate_release_notes: true
