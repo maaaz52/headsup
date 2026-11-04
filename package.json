@@ -1,6 +1,6 @@
 {
   "name": "headsup",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Headsup - a friendly character flies across your screen before each meeting",
   "main": "out/main/index.js",
   "author": "maaz",

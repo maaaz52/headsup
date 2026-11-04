@@ -146,14 +146,11 @@ export default function App(): React.JSX.Element {
     setAdding(true)
     setAddError('')
     try {
-      const result = await window.api.addCalendar(url, calendarName)
+      await window.api.addCalendar(url, calendarName)
       setCalendarUrl('')
       setCalendarName('')
       setCalendars(await window.api.listCalendars())
       await manualRefresh()
-      if (result.events === 0) {
-        setAddError('Calendar added, but no upcoming events were found in it.')
-      }
     } catch (err) {
       setAddError(err instanceof Error ? err.message : 'Could not add this calendar. Check the link.')
     } finally {
@@ -450,8 +447,12 @@ export default function App(): React.JSX.Element {
             {events.length === 0 ? (
               <div className="empty-agenda">
                 <div className="empty-route" aria-hidden="true"><span /></div>
-                <strong>Your flight path is clear</strong>
-                <p>Connect a calendar and upcoming meetings will land here</p>
+                <strong>{calendars.length > 0 ? 'No meetings coming up' : 'Your flight path is clear'}</strong>
+                <p>
+                  {calendars.length > 0
+                    ? 'Your calendar is connected. Headsup checks for meetings every five minutes.'
+                    : 'Connect a calendar and upcoming meetings will land here'}
+                </p>
               </div>
             ) : (
               <ul className="event-list">
@@ -474,7 +475,7 @@ export default function App(): React.JSX.Element {
       </main>
 
       <footer className="footer">
-        <span>Headsup 1.0.3</span>
+        <span>Headsup 1.0.4</span>
         <span>Closing this window keeps reminders running in the tray</span>
       </footer>
     </div>
