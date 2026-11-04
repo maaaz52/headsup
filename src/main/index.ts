@@ -89,7 +89,7 @@ function createMainWindow(): BrowserWindow {
 function registerIpcHandlers(): void {
   ipcMain.handle('flyby:start', (_event, payload: { character: string; message: string }) => {
     const s = getSettings()
-    showFlyBy(payload?.character ?? s.characterId, payload?.message ?? 'Heads up!', {
+    return showFlyBy(payload?.character ?? s.characterId, payload?.message ?? 'Heads up!', {
       theme: s.bannerTheme,
       sound: s.soundEnabled
     })

@@ -269,16 +269,6 @@ a:focus-visible {
 
 .stage-character svg { display: block; width: 100%; height: auto; }
 .flight-stage .prop { transform-origin: 45px 165px; }
-.flight-stage.is-flying .stage-character { animation: test-flight 1600ms var(--ease) both; }
-.flight-stage.is-flying .prop { animation: prop-spin 140ms linear infinite; }
-
-@keyframes test-flight {
-  0% { opacity: 0; transform: translateX(-90%) scaleX(-1); }
-  28%, 72% { opacity: 1; transform: translateX(-50%) scaleX(-1); }
-  100% { opacity: 0; transform: translateX(10%) scaleX(-1); }
-}
-
-@keyframes prop-spin { to { transform: rotate(360deg); } }
 
 .banner-preview {
   position: relative;

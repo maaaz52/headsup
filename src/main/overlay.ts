@@ -35,7 +35,7 @@ function getOverlayPath(opts: FlyByOptions): { file?: string; url?: string } {
   return { file: join(__dirname, '../renderer/overlay.html') }
 }
 
-export function showFlyBy(character: string, message: string, opts: Partial<FlyByOptions> = {}): void {
+export function showFlyBy(character: string, message: string, opts: Partial<FlyByOptions> = {}): number {
   const { workArea } = screen.getPrimaryDisplay()
   const options: FlyByOptions = {
     character,
@@ -62,6 +62,7 @@ export function showFlyBy(character: string, message: string, opts: Partial<FlyB
       show: false,
       alwaysOnTop: true,
       hasShadow: false,
+      backgroundColor: '#00000000',
       webPreferences: {
         sandbox: true
       }
@@ -70,6 +71,8 @@ export function showFlyBy(character: string, message: string, opts: Partial<FlyB
     overlayWindow.setAlwaysOnTop(true, 'screen-saver')
     overlayWindow.setIgnoreMouseEvents(true, { forward: true })
   }
+
+  overlayWindow.hide()
 
   const path = getOverlayPath(options)
   const query: Record<string, string> = {
@@ -91,6 +94,8 @@ export function showFlyBy(character: string, message: string, opts: Partial<FlyB
   hideTimer = setTimeout(() => {
     overlayWindow?.hide()
   }, flyDuration(workArea.width))
+
+  return flyDuration(workArea.width)
 }
 
 export function closeOverlay(): void {

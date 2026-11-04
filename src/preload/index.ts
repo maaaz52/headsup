@@ -3,7 +3,7 @@ import { contextBridge, ipcRenderer } from 'electron'
 const api = {
   appName: 'Headsup',
   platform: process.platform,
-  startFlyBy: (character: string, message: string): Promise<void> =>
+  startFlyBy: (character: string, message: string): Promise<number> =>
     ipcRenderer.invoke('flyby:start', { character, message }),
 
   listUpcomingEvents: (): Promise<unknown[]> => ipcRenderer.invoke('calendar:events'),

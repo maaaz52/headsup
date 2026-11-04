@@ -20,7 +20,7 @@ export interface WindowApi {
   appName: string
   platform: 'win32' | 'darwin' | 'linux'
   isBrowserPreview?: boolean
-  startFlyBy: (character: string, message: string) => Promise<void>
+  startFlyBy: (character: string, message: string) => Promise<number>
   listUpcomingEvents: () => Promise<CalendarEvent[]>
   refreshEvents: () => Promise<{ events: CalendarEvent[]; error: string | null }>
   getSettings: () => Promise<AppSettings>

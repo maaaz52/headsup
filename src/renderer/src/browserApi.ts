@@ -33,7 +33,7 @@ export function createBrowserApi(): WindowApi {
         ? 'linux'
         : 'win32',
     isBrowserPreview: true,
-    startFlyBy: async () => {},
+    startFlyBy: async () => 0,
     listUpcomingEvents: async () => [],
     refreshEvents: async () => ({ events: [], error: null }),
     getSettings: async () => readSettings(),

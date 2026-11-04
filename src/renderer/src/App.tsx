@@ -75,8 +75,12 @@ export default function App(): React.JSX.Element {
     const msg = settings.customMessage
       ? settings.customMessage.replaceAll('{meeting}', 'Test Meeting').replaceAll('{minutes}', String(settings.headsUpMinutes))
       : 'Test flight — here we go!'
-    await window.api.startFlyBy(settings.characterId, msg)
-    window.setTimeout(() => setFlying(false), 6500)
+    try {
+      const duration = await window.api.startFlyBy(settings.characterId, msg)
+      window.setTimeout(() => setFlying(false), duration)
+    } catch {
+      setFlying(false)
+    }
   }
 
   const changeHeadsUp = async (minutes: number): Promise<void> => {
@@ -204,7 +208,7 @@ export default function App(): React.JSX.Element {
           </div>
 
           <div className="flight-layout">
-            <div className={`flight-stage stage-${settings.bannerTheme} ${flying ? 'is-flying' : ''}`}>
+            <div className={`flight-stage stage-${settings.bannerTheme}`}>
               <div className="route-line" aria-hidden="true">
                 <span />
               </div>
@@ -444,7 +448,7 @@ export default function App(): React.JSX.Element {
       </main>
 
       <footer className="footer">
-        <span>Headsup 1.0.0</span>
+        <span>Headsup 1.0.2</span>
         <span>Closing this window keeps reminders running in the tray</span>
       </footer>
     </div>

@@ -47,6 +47,11 @@ for (let i = 0; i < WAYPOINT_COUNT; i++) {
   waypoints.push(rand(Y_MIN, Y_MAX))
 }
 
+if (flight) {
+  flight.style.transform = `translate3d(${startX}px, ${waypoints[0]}px, 0)`
+  flight.style.visibility = 'visible'
+}
+
 // smoothstep easing between waypoints for gentle up/down drift
 function easeSmooth(t: number): number {
   return t * t * (3 - 2 * t)
@@ -72,7 +77,7 @@ function frame(now: number): void {
   const tilt = Math.max(-TILT_MAX, Math.min(TILT_MAX, slope * 0.35))
 
   if (flight) {
-    flight.style.transform = `translate(${x}px, ${y}px)`
+    flight.style.transform = `translate3d(${x}px, ${y}px, 0)`
   }
   if (characterEl) {
     characterEl.style.transform = `rotate(${tilt}deg)`
