@@ -86,6 +86,7 @@ h2 { max-width: 15ch; font-size: clamp(38px, 5vw, 68px); font-weight: 540; lette
 .download-link { padding: 10px 13px; border-radius: 9px; background: var(--text); color: var(--bg); font-size: 13px; font-weight: 650; text-decoration: none; transition: transform 180ms ease, opacity 180ms ease; }
 .download-link:hover { transform: translateY(-1px); }
 .download-link.quiet { border: 1px solid var(--line); background: transparent; color: var(--text); }
+.download-link.is-disabled { cursor: not-allowed; background: var(--line); color: var(--muted); }
 
 .product-story { display: grid; grid-template-columns: minmax(0, 1.28fr) minmax(320px, 0.72fr); align-items: center; gap: clamp(40px, 7vw, 100px); padding: 100px 0; }
 .product-story figure { overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: 0 24px 70px rgba(34, 20, 12, 0.12); }

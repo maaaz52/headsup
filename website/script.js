@@ -13,7 +13,7 @@ const downloads = {
   linux: {
     label: 'Linux, 64-bit',
     button: 'Download AppImage',
-    url: `${releaseBase}/Headsup-linux-x64.AppImage`
+    url: `${releaseBase}/Headsup-linux-x86_64.AppImage`
   }
 }
 

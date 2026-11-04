@@ -43,7 +43,6 @@ jobs:
           done
           ${{ matrix.command }}
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CSC_LINK: ${{ matrix.artifact == 'windows' && secrets.WINDOWS_CSC_LINK || matrix.artifact == 'macos' && secrets.MACOS_CSC_LINK || '' }}
           CSC_KEY_PASSWORD: ${{ matrix.artifact == 'windows' && secrets.WINDOWS_CSC_KEY_PASSWORD || matrix.artifact == 'macos' && secrets.MACOS_CSC_KEY_PASSWORD || '' }}
           APPLE_ID: ${{ matrix.artifact == 'macos' && secrets.APPLE_ID || '' }}
