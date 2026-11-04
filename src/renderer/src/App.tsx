@@ -11,6 +11,8 @@ const THEMES = [
   { id: 'sky', name: 'Sky' }
 ]
 
+const AGENDA_REFRESH_INTERVAL_MS = 5 * 60 * 1000
+
 function formatTime(iso: string): string {
   const d = new Date(iso)
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -166,16 +168,16 @@ export default function App(): React.JSX.Element {
   }
 
   useEffect(() => {
-    // Keep the Upcoming list in sync by force-refreshing on an interval, same as manual refresh.
+    // Keep Upcoming Meetings current without making excessive calendar requests.
     const timer = window.setInterval(() => {
       window.api
         .refreshEvents()
         .then((result) => {
           setEvents(result.events)
-          if (result.error) setLoadError(result.error)
+          setLoadError(result.error)
         })
         .catch(() => {})
-    }, 15_000)
+    }, AGENDA_REFRESH_INTERVAL_MS)
     return () => window.clearInterval(timer)
   }, [])
 
@@ -359,10 +361,34 @@ export default function App(): React.JSX.Element {
               <p>No account connection required. Copy the private iCal or ICS subscription link from your calendar settings and paste it below.</p>
             </div>
 
+            <div className="calendar-guide" aria-labelledby="google-calendar-guide">
+              <div className="calendar-guide-heading">
+                <div>
+                  <span className="guide-provider">Google Calendar</span>
+                  <strong id="google-calendar-guide">Find your private calendar link</strong>
+                </div>
+                <a
+                  className="calendar-settings-link"
+                  href="https://calendar.google.com/calendar/u/0/r/settings"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Open Google settings
+                </a>
+              </div>
+              <ol className="calendar-steps">
+                <li><span>1</span><p>Use Google Calendar on a computer. The mobile app does not show this link.</p></li>
+                <li><span>2</span><p>Click the <strong>gear icon</strong> at the top, then choose <strong>Settings</strong>.</p></li>
+                <li><span>3</span><p>Under <strong>Settings for my calendars</strong>, select the calendar you own.</p></li>
+                <li><span>4</span><p>Open <strong>Integrate calendar</strong> and copy <strong>Secret address in iCal format</strong>.</p></li>
+                <li><span>5</span><p>Return to Headsup, paste the link below, give it a name, and click <strong>Connect calendar</strong>.</p></li>
+              </ol>
+              <p className="calendar-guide-note">Cannot see the secret address? A work or school administrator may have disabled calendar exports.</p>
+            </div>
+
             <details className="calendar-help">
-              <summary>Where do I find this link?</summary>
+              <summary>Using Outlook or iCloud instead?</summary>
               <ul>
-                <li><strong>Google:</strong> Calendar settings → Integrate calendar → Secret address in iCal format</li>
                 <li><strong>Outlook:</strong> Settings → Calendar → Shared calendars → Publish a calendar</li>
                 <li><strong>iCloud:</strong> Share Calendar → Public Calendar → Copy link</li>
               </ul>
@@ -391,7 +417,7 @@ export default function App(): React.JSX.Element {
                   {adding ? 'Connecting…' : 'Connect calendar'}
                 </button>
               </div>
-              <p className="field-help calendar-privacy-note">Your link stays on this device. Keep it private—anyone with the link may be able to read your calendar.</p>
+              <p className="field-help calendar-privacy-note">Your link stays on this device. Keep it private because anyone with the link may be able to read your calendar.</p>
               {addError && <p className="error">{addError}</p>}
             </div>
             {calendars.length > 0 && (
@@ -448,7 +474,7 @@ export default function App(): React.JSX.Element {
       </main>
 
       <footer className="footer">
-        <span>Headsup 1.0.2</span>
+        <span>Headsup 1.0.3</span>
         <span>Closing this window keeps reminders running in the tray</span>
       </footer>
     </div>

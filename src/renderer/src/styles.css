@@ -605,8 +605,66 @@ code {
   font-weight: 500;
 }
 
+.calendar-guide {
+  margin-bottom: 14px;
+  padding: 16px;
+  border: 1px solid rgba(240, 160, 107, 0.3);
+  border-radius: 12px;
+  background: rgba(240, 160, 107, 0.05);
+}
+
+.calendar-guide-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.calendar-guide-heading > div { display: flex; flex-direction: column; gap: 3px; }
+.calendar-guide-heading strong { color: var(--text); font-size: 14px; font-weight: 600; }
+.guide-provider { color: var(--accent); font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+
+.calendar-settings-link {
+  flex: 0 0 auto;
+  padding: 8px 10px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.calendar-settings-link:hover { border-color: var(--accent); color: var(--accent); }
+
+.calendar-steps { display: grid; gap: 0; margin-top: 4px; list-style: none; }
+.calendar-steps li {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--hairline);
+}
+.calendar-steps li:last-child { border-bottom: 0; }
+.calendar-steps li > span {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(240, 160, 107, 0.42);
+  border-radius: 7px;
+  color: var(--accent);
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 10px;
+}
+.calendar-steps p { color: var(--text-secondary); font-size: 12px; line-height: 1.5; }
+.calendar-steps strong { color: var(--text); font-weight: 600; }
+.calendar-guide-note { color: var(--text-muted); font-size: 11px; line-height: 1.5; }
+
 .calendar-help {
-  margin: -6px 0 20px;
+  margin: 0 0 20px;
   color: var(--text-secondary);
   font-size: 12px;
 }
@@ -724,6 +782,8 @@ code {
   .character-grid { grid-template-columns: repeat(4, minmax(64px, 1fr)); overflow-x: auto; padding-bottom: 4px; }
   .input-row { grid-template-columns: 1fr; align-items: stretch; }
   .calendar-name { width: 100%; }
+  .calendar-guide-heading { align-items: flex-start; flex-direction: column; }
+  .calendar-settings-link { width: 100%; text-align: center; }
   .footer { align-items: flex-start; flex-direction: column; padding: 4px 20px 24px; }
 }
 
